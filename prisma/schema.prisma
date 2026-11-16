@@ -1,0 +1,240 @@
+// ==============================================================================
+// INTEGRITY & CHAIN-OF-CUSTODY FOCUSED (ICCF) - PRISMA SCHEMA
+// Defensive digital forensics & evidence ledger database design
+// ==============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------------------------------------------------
+// ENUMS
+// ------------------------------------------------------------------------------
+
+enum Role {
+  ADMIN
+  INVESTIGATOR
+  VIEWER
+}
+
+enum CasePriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum CaseStatus {
+  OPEN
+  UNDER_INVESTIGATION
+  PENDING_REVIEW
+  CLOSED
+  ARCHIVED
+}
+
+enum EvidenceStatus {
+  REGISTERED
+  IN_CUSTODY
+  TRANSFERRED
+  RELEASED
+  ARCHIVED
+}
+
+enum VerificationStatus {
+  VERIFIED
+  MISMATCH
+  ERROR
+  NOT_VERIFIED
+}
+
+enum CustodyEventType {
+  EVIDENCE_REGISTERED
+  EVIDENCE_ACCESSED
+  EVIDENCE_TRANSFERRED
+  EVIDENCE_VERIFIED
+  EVIDENCE_DOWNLOADED
+  EVIDENCE_STATUS_CHANGED
+}
+
+enum AuditOutcome {
+  SUCCESS
+  FAILURE
+  DENIED
+}
+
+// ------------------------------------------------------------------------------
+// MODELS
+// ------------------------------------------------------------------------------
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  fullName     String
+  role         Role      @default(INVESTIGATOR)
+  badgeNumber  String?
+  department   String?
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relationships
+  createdCases           Case[]                  @relation("CaseCreator")
+  assignedCases          CaseAssignment[]
+  caseAssignmentsGiven   CaseAssignment[]        @relation("AssignedBy")
+  uploadedEvidence       Evidence[]              @relation("EvidenceUploader")
+  custodyEventsAsActor   CustodyEvent[]          @relation("CustodyActor")
+  custodyAsPrevious      CustodyEvent[]          @relation("PreviousCustodian")
+  custodyAsNew           CustodyEvent[]          @relation("NewCustodian")
+  verificationsPerformed IntegrityVerification[] @relation("Verifier")
+  auditLogs              AuditLog[]
+  sessions               Session[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([token])
+}
+
+model Case {
+  id            String       @id @default(uuid())
+  caseReference String       @unique // e.g. ICCF-2026-0001
+  title         String
+  description   String
+  category      String       // Incident category e.g. Ransomware, Insider Threat, Data Breach
+  priority      CasePriority @default(MEDIUM)
+  status        CaseStatus   @default(OPEN)
+  createdById   String
+  createdBy     User         @relation("CaseCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  // Relationships
+  assignments   CaseAssignment[]
+  evidenceItems Evidence[]
+
+  @@index([caseReference])
+  @@index([status])
+  @@index([priority])
+}
+
+model CaseAssignment {
+  id           String   @id @default(uuid())
+  caseId       String
+  case         Case     @relation(fields: [caseId], references: [id], onDelete: Restrict)
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  assignedById String
+  assignedBy   User     @relation("AssignedBy", fields: [assignedById], references: [id], onDelete: Restrict)
+  assignedAt   DateTime @default(now())
+
+  @@unique([caseId, userId])
+  @@index([caseId])
+  @@index([userId])
+}
+
+model Evidence {
+  id                       String             @id @default(uuid())
+  evidenceReference        String             @unique // e.g. EVID-2026-0001
+  caseId                   String
+  case                     Case               @relation(fields: [caseId], references: [id], onDelete: Restrict)
+  title                    String
+  description              String?
+  category                 String             // Log, Disk Image, Memory Dump, Network Capture, Document
+  originalFilename         String
+  storageReference         String             @unique // UUID-based filename on disk
+  fileSizeBytes            BigInt
+  mimeType                 String
+  sha256Hash               String             // 64-char hex original hash at registration
+  status                   EvidenceStatus     @default(REGISTERED)
+  latestVerificationStatus VerificationStatus @default(NOT_VERIFIED)
+  uploadedById             String
+  uploadedBy               User               @relation("EvidenceUploader", fields: [uploadedById], references: [id], onDelete: Restrict)
+  uploadedAt               DateTime           @default(now())
+  updatedAt                DateTime           @updatedAt
+
+  // Relationships (Append-only / No cascading deletes for forensic integrity)
+  custodyEvents            CustodyEvent[]
+  verifications            IntegrityVerification[]
+
+  @@index([evidenceReference])
+  @@index([caseId])
+  @@index([sha256Hash])
+  @@index([status])
+}
+
+model CustodyEvent {
+  id                  String           @id @default(uuid())
+  evidenceId          String
+  evidence            Evidence         @relation(fields: [evidenceId], references: [id], onDelete: Restrict)
+  actorId             String
+  actor               User             @relation("CustodyActor", fields: [actorId], references: [id], onDelete: Restrict)
+  eventType           CustodyEventType
+  previousCustodianId String?
+  previousCustodian   User?            @relation("PreviousCustodian", fields: [previousCustodianId], references: [id], onDelete: Restrict)
+  newCustodianId      String?
+  newCustodian        User?            @relation("NewCustodian", fields: [newCustodianId], references: [id], onDelete: Restrict)
+  reason              String
+  notes               String?
+  previousEventHash   String           // SHA-256 of the prior custody event (or GENESIS)
+  currentEventHash    String           // SHA-256 canonical hash of this event
+  timestamp           DateTime         @default(now())
+
+  @@index([evidenceId])
+  @@index([actorId])
+  @@index([timestamp])
+  @@index([currentEventHash])
+}
+
+model IntegrityVerification {
+  id             String             @id @default(uuid())
+  evidenceId     String
+  evidence       Evidence           @relation(fields: [evidenceId], references: [id], onDelete: Restrict)
+  verifiedById   String
+  verifiedBy     User               @relation("Verifier", fields: [verifiedById], references: [id], onDelete: Restrict)
+  originalHash   String             // Hash stored at registration
+  calculatedHash String             // Freshly computed hash from physical file
+  status         VerificationStatus
+  notes          String?
+  timestamp      DateTime           @default(now())
+
+  @@index([evidenceId])
+  @@index([timestamp])
+  @@index([status])
+}
+
+model AuditLog {
+  id           String       @id @default(uuid())
+  actorId      String?
+  actor        User?        @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action       String       // e.g. AUTH_LOGIN, EVIDENCE_UPLOAD, VERIFICATION_RUN
+  resourceType String       // e.g. USER, CASE, EVIDENCE, CUSTODY
+  resourceId   String?
+  outcome      AuditOutcome @default(SUCCESS)
+  ipAddress    String?
+  userAgent    String?
+  metadata     String?      // JSON string of non-sensitive contextual metadata
+  timestamp    DateTime     @default(now())
+
+  @@index([actorId])
+  @@index([action])
+  @@index([timestamp])
+  @@index([resourceType])
+}
