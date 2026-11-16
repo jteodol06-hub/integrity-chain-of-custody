@@ -62,7 +62,8 @@ ICCF enforces strict role tiering across all REST API endpoints:
 | `/api/evidence/:id/transfer`       |  POST  |   Allow   | Assigned Only  |   Deny (403)   |   Deny (401)    |
 | `/api/evidence/:id/custody/verify` |  POST  |   Allow   | Assigned Only  | Assigned Only  |   Deny (401)    |
 | `/api/audit`                       |  GET   |   Allow   |     Allow      |   Deny (403)   |   Deny (401)    |
-| `/api/dashboard/stats`             |  GET   |   Allow   |     Allow      |     Allow      |   Deny (401)    |
+| `/api/dashboard/summary`           |  GET   |   Allow   |     Allow      |     Allow      |   Deny (401)    |
+| `/api/dashboard/activity`          |  GET   |   Allow   |     Allow      |     Allow      |   Deny (401)    |
 
 ---
 

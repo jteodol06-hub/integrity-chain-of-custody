@@ -173,8 +173,9 @@ All protected endpoints require an `Authorization: Bearer <JWT>` header.
 | **POST**  | `/api/evidence/:id/transfer`       | ADMIN, INVESTIGATOR  | Execute custody transfer with cryptographically linked event block            |
 | **POST**  | `/api/evidence/:id/custody/verify` | All Roles            | Run recursive cryptographic chain validation on custody ledger                |
 | **GET**   | `/api/audit`                       | ADMIN, INVESTIGATOR  | Query system audit logs with filters (action, outcome, date range)            |
-| **GET**   | `/api/dashboard/stats`             | All Roles            | Fetch forensic metrics (total cases, verified evidence, recent activity)      |
-| **GET**   | `/health`                          | Public               | Healthcheck endpoint reporting database connectivity and uptime               |
+| **GET**   | `/api/dashboard/summary`           | All Roles            | Fetch forensic KPI metrics (total cases, open cases, verified evidence count) |
+| **GET**   | `/api/dashboard/activity`          | All Roles            | Fetch recent system activity feed and verification audit logs                 |
+| **GET**   | `/api/health`                      | Public               | Healthcheck endpoint reporting database connectivity and uptime               |
 
 ---
 
