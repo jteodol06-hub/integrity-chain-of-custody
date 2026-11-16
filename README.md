@@ -2,14 +2,8 @@
 
 ### _Preserving Digital Evidence. Protecting Its Integrity. Maintaining the Chain of Custody._
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-26-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
-[![React](https://img.shields.io/badge/React-18.3-61DAFB?logo=react&logoColor=black)](https://react.dev/)
-[![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-3.4-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
-[![Vitest](https://img.shields.io/badge/Vitest-3.2-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
-[![Tests](https://img.shields.io/badge/Tests-50%20Passing-brightgreen.svg)](https://vitest.dev/)
+> [!IMPORTANT]
+> **Educational & Academic Purpose**: This platform is designed and developed strictly for **educational, academic, and portfolio demonstration purposes**. It serves as an instructional reference architecture demonstrating how cryptographic hashing, immutable audit logging, and append-only hash chains can be engineered into full-stack web applications. It is not intended for production forensic casework or real-world legal proceedings without independent accreditation.
 
 ---
 
