@@ -23,6 +23,7 @@ export const NetworkBackground: React.FC = () => {
     if (!ctx) return;
 
     let animationFrameId: number;
+    let isRunning = false;
     let width = (canvas.width = window.innerWidth);
     let height = (canvas.height = window.innerHeight);
 
@@ -37,7 +38,8 @@ export const NetworkBackground: React.FC = () => {
     ];
 
     const isMobile = width < 768;
-    const particleCount = isMobile ? 22 : 46;
+    // Capped node count to ensure high FPS on both desktop and mobile
+    const particleCount = isMobile ? 20 : 45;
     const connectionDistance = isMobile ? 105 : 145;
 
     const particles: Particle[] = [];
@@ -59,15 +61,8 @@ export const NetworkBackground: React.FC = () => {
       });
     }
 
-    const handleResize = () => {
-      if (!canvas) return;
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    const render = () => {
+    // Single frame drawing routine
+    const drawFrame = () => {
       ctx.clearRect(0, 0, width, height);
 
       // 1. Draw interconnected gradient lines (representing hash chains / forensic network)
@@ -127,8 +122,12 @@ export const NetworkBackground: React.FC = () => {
         ctx.shadowBlur = 8;
         ctx.fill();
         ctx.restore();
+      }
+    };
 
-        // Smooth drift update
+    // Update node positions
+    const updatePositions = () => {
+      for (const p of particles) {
         p.x += p.vx;
         p.y += p.vy;
 
@@ -138,14 +137,84 @@ export const NetworkBackground: React.FC = () => {
         if (p.y < -15) p.y = height + 15;
         if (p.y > height + 15) p.y = -15;
       }
-
-      animationFrameId = requestAnimationFrame(render);
     };
 
-    render();
+    // Animation loop
+    const animate = () => {
+      if (!isRunning) return;
+      drawFrame();
+      updatePositions();
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    const startLoop = () => {
+      if (isRunning) return;
+      isRunning = true;
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    const stopLoop = () => {
+      isRunning = false;
+      cancelAnimationFrame(animationFrameId);
+    };
+
+    // Accessibility (a11y): Respect user preference for reduced motion
+    const motionQuery =
+      typeof window.matchMedia === 'function'
+        ? window.matchMedia('(prefers-reduced-motion: reduce)')
+        : null;
+
+    let prefersReducedMotion = motionQuery ? motionQuery.matches : false;
+
+    if (prefersReducedMotion) {
+      drawFrame(); // Draw one static frame without animation
+    } else {
+      startLoop();
+    }
+
+    const handleMotionChange = (e: MediaQueryListEvent) => {
+      prefersReducedMotion = e.matches;
+      if (prefersReducedMotion) {
+        stopLoop();
+        drawFrame();
+      } else if (!document.hidden) {
+        startLoop();
+      }
+    };
+
+    if (motionQuery?.addEventListener) {
+      motionQuery.addEventListener('change', handleMotionChange);
+    }
+
+    // Performance: Pause animation when tab is inactive/hidden
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        stopLoop();
+      } else if (!prefersReducedMotion) {
+        startLoop();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Responsive Canvas Resizing
+    const handleResize = () => {
+      if (!canvas) return;
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+      if (prefersReducedMotion) {
+        drawFrame();
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      stopLoop();
+      if (motionQuery?.removeEventListener) {
+        motionQuery.removeEventListener('change', handleMotionChange);
+      }
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('resize', handleResize);
     };
   }, []);
