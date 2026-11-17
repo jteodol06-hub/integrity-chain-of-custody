@@ -39,9 +39,9 @@ export const AppLayout: React.FC = () => {
   ];
 
   return (
-    <div className="flex h-screen bg-[#080D18] text-[#F8FAFC] overflow-hidden">
+    <div className="flex h-screen bg-[#06020c]/80 text-[#F8FAFC] overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-64 bg-[#101827] border-r border-[#263449] flex flex-col justify-between flex-shrink-0">
+      <aside className="w-64 bg-[#101827]/90 backdrop-blur-md border-r border-[#263449] flex flex-col justify-between flex-shrink-0">
         <div>
           {/* Logo & Product Brand */}
           <div className="p-5 border-b border-[#263449] flex items-center gap-3">
@@ -112,7 +112,7 @@ export const AppLayout: React.FC = () => {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Header */}
-        <header className="h-16 bg-[#101827] border-b border-[#263449] px-6 flex items-center justify-between flex-shrink-0">
+        <header className="h-16 bg-[#101827]/85 backdrop-blur-md border-b border-[#263449] px-6 flex items-center justify-between flex-shrink-0">
           {/* Global Search Bar */}
           <div className="relative w-96">
             <Search className="w-4 h-4 text-[#94A3B8] absolute left-3 top-1/2 -translate-y-1/2" />
@@ -160,7 +160,7 @@ export const AppLayout: React.FC = () => {
         </header>
 
         {/* Page View Body */}
-        <main className="flex-1 overflow-y-auto p-8 bg-[#080D18]">
+        <main className="flex-1 overflow-y-auto p-8 bg-transparent">
           <Outlet />
         </main>
       </div>

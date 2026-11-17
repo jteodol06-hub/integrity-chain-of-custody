@@ -25,3 +25,7 @@ Object.defineProperty(globalThis, 'localStorage', {
   value: storageMock,
   writable: true,
 });
+
+// Mock HTMLCanvasElement.getContext for jsdom
+HTMLCanvasElement.prototype.getContext = (() =>
+  null) as unknown as typeof HTMLCanvasElement.prototype.getContext;

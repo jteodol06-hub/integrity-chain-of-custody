@@ -10,6 +10,7 @@ import { EvidenceVaultPage } from './pages/EvidenceVaultPage';
 import { EvidenceDetailsPage } from './pages/EvidenceDetailsPage';
 import { AuditTrailPage } from './pages/AuditTrailPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { NetworkBackground } from './components/NetworkBackground';
 
 // Protected Route Guard
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -37,6 +38,7 @@ export const App: React.FC = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <NetworkBackground />
         <Routes>
           {/* Public Auth Route */}
           <Route path="/login" element={<LoginPage />} />
