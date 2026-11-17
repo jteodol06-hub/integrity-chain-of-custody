@@ -52,25 +52,24 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#080D18] flex items-center justify-center p-6 text-[#F8FAFC]">
-      {/* Background radial glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-900/10 via-transparent to-transparent pointer-events-none" />
-
+    <div className="min-h-screen bg-transparent flex items-center justify-center p-6 text-[#F8FAFC]">
       <div className="max-w-md w-full relative z-10 space-y-6">
         {/* Branding header */}
         <div className="text-center space-y-3">
-          <div className="inline-flex w-14 h-14 rounded-2xl bg-sky-500/10 border border-sky-500/30 items-center justify-center text-sky-400 mb-2 shadow-lg shadow-sky-500/5">
-            <Shield className="w-8 h-8" />
+          <div className="inline-flex w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 items-center justify-center text-purple-400 mb-2 shadow-lg shadow-purple-500/10">
+            <Shield className="w-8 h-8 text-pink-400" />
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight font-mono text-white">ICCF</h1>
-          <p className="text-sm font-semibold text-sky-400">Integrity & Chain-of-Custody Focused</p>
+          <p className="text-sm font-semibold bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-400 bg-clip-text text-transparent">
+            Integrity & Chain-of-Custody Focused
+          </p>
           <p className="text-xs text-[#94A3B8] max-w-sm mx-auto leading-relaxed">
             Preserving Digital Evidence. Protecting Its Integrity. Maintaining the Chain of Custody.
           </p>
         </div>
 
         {/* Card */}
-        <div className="bg-[#101827] border border-[#263449] rounded-2xl p-8 shadow-2xl space-y-6">
+        <div className="bg-[#101827]/90 backdrop-blur-md border border-[#263449]/80 rounded-2xl p-8 shadow-2xl space-y-6">
           <div className="flex items-center justify-between border-b border-[#263449] pb-4">
             <h2 className="text-base font-semibold text-white">
               {isRegisterMode ? 'Register Investigator' : 'Sign in to your account'}
